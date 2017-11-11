@@ -412,6 +412,8 @@ public class CustomerAggregate {
 
     final IdentificationCardEntity cardEntity = identificationCardEntity.orElseThrow(() -> ServiceException.notFound("Identification card {0} not found.", command.number()));
 
+    final String customerIdentifier = cardEntity.getCustomer().getIdentifier();
+
     final IdentificationCardScanEntity identificationCardScanEntity = IdentificationCardScanMapper.map(command.scan());
 
     final MultipartFile image = command.image();
@@ -432,7 +434,7 @@ public class CustomerAggregate {
 
     identificationCardRepository.save(cardEntity);
 
-    return new ScanEvent(command.number(), command.scan().getIdentifier());
+    return new ScanEvent(customerIdentifier, command.number(), command.scan().getIdentifier());
   }
 
   @Transactional
@@ -443,11 +445,13 @@ public class CustomerAggregate {
     final Optional<IdentificationCardScanEntity> scanEntity = cardEntity
             .flatMap(entity -> this.identificationCardScanRepository.findByIdentifierAndIdentificationCard(command.scanIdentifier(), entity));
 
+    final String[] customerIdentifier = new String[1];
     scanEntity.ifPresent(identificationCardScanEntity -> {
 
       this.identificationCardScanRepository.delete(identificationCardScanEntity);
 
       final IdentificationCardEntity identificationCard = identificationCardScanEntity.getIdentificationCard();
+      customerIdentifier[0] = identificationCard.getCustomer().getIdentifier();
 
       identificationCard.setLastModifiedBy(UserContextHolder.checkedGetUser());
       identificationCard.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
@@ -455,7 +459,7 @@ public class CustomerAggregate {
       this.identificationCardRepository.save(identificationCard);
     });
 
-    return new ScanEvent(command.number(), command.scanIdentifier());
+    return new ScanEvent(customerIdentifier[0], command.number(), command.scanIdentifier());
   }
 
   @Transactional

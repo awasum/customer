@@ -19,11 +19,14 @@ import java.util.Objects;
 
 public class ScanEvent {
 
+  private final String customerIdentifier;
+
   private final String number;
 
   private final String scanIdentifier;
 
-  public ScanEvent(final String number, final String scanIdentifier) {
+  public ScanEvent(final String customerIdentifier, final String number, final String scanIdentifier) {
+    this.customerIdentifier = customerIdentifier;
     this.number = number;
     this.scanIdentifier = scanIdentifier;
   }
@@ -33,18 +36,20 @@ public class ScanEvent {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ScanEvent scanEvent = (ScanEvent) o;
-    return Objects.equals(number, scanEvent.number) &&
+    return Objects.equals(customerIdentifier, scanEvent.customerIdentifier) &&
+            Objects.equals(number, scanEvent.number) &&
             Objects.equals(scanIdentifier, scanEvent.scanIdentifier);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(number, scanIdentifier);
+    return Objects.hash(customerIdentifier, number, scanIdentifier);
   }
 
   @Override
   public String toString() {
     return "ScanEvent{" +
+            "customerIdentifier='" + customerIdentifier + '\'' +
             "number='" + number + '\'' +
             ", scanIdentifier='" + scanIdentifier + '\'' +
             '}';
